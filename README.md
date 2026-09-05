@@ -1,65 +1,49 @@
-# taskbarpick
+# 🖥️ Taskbar Picker
 
-Windows 11 only lets you put the taskbar on the primary display or on all of them.
-Taskbar Picker lets you pick exactly which displays get one.
+Windows 11 gives you two choices: taskbar on **one** display, or on **all** of them.
 
-![dialog](docs/dialog.png)
+Got three monitors and want the taskbar on just two? Tough luck. That's what this fixes ✨
 
-## Use
+![Taskbar Picker](docs/dialog.png)
 
-Run `bin\taskbarpick.exe`. Tick the displays that should have a taskbar, hit Apply.
-It then sits in the tray; double-click the tray icon to change the selection.
+## 📦 Get it running
 
-- **Identify Displays** flashes the display number on each screen, matching the numbering in
-  Settings > System > Display.
-- **Start with Windows** adds an HKCU `Run` entry that launches it minimized (`--silent`).
-- **Exit (Restore All Taskbars)** puts every taskbar back.
+1. Download or clone this repo
+2. Run `bin\taskbarpick.exe`
 
-Windows itself has to create the taskbars on non-primary displays, so the first Apply that
-wants one turns on "show taskbar on all displays" and offers to restart Explorer once. If you
-end up wanting the taskbar on the primary display only, Apply turns that setting back off,
-which is the native way to do it and leaves nothing behind.
+That's it. No installer, no runtime to download, nothing to configure. It's a single 20KB app 🪶
 
-## The leftover strip
+## 🎛️ Using it
 
-A hidden taskbar keeps reserving its 48px strip, and Explorer will not give it back. Measured
-on build 26200, none of these work on a secondary display:
+Tick the displays that should have a taskbar, click **Apply**. Done.
 
-- `SPI_SETWORKAREA` reports success and changes nothing (on the primary it does apply, but
-  Explorer then re-docks its bar inside the smaller area, and repeating that walks the bar and
-  your windows up the screen, so this app never writes work areas).
-- `ABM_SETPOS` against Explorer's own bar is ignored.
-- Resizing the bar window does not change the reservation.
-- The autohide flag and the taskbar size fields in that display's `MMStuckRects3` blob are
-  ignored; Windows 11 treats autohide as global (`ABM_SETSTATE` autohides every display at once).
+- 🔍 **Identify Displays** flashes a big number on each screen, so you know which is which
+- 🚀 **Start with Windows** brings it back automatically after a reboot
+- 📌 It lives in the system tray. Double-click the icon to change your picks
+- 👋 Tray menu → **Exit** puts every taskbar back exactly as it was
 
-So taskbarpick resizes the windows instead: **Stretch maximized windows over the leftover
-strip** watches for a window maximized on a display whose taskbar is hidden, un-maximizes it and
-places it over the whole monitor. The shell re-applies the maximized rect over any `SetWindowPos`,
-so dropping the maximized state is the only way past it, and the cost is that such a window no
-longer counts as maximized: its restore button and Win+Down behave like a normal window. Displays
-that still have a taskbar are never touched. Turning the option off, or re-enabling that display's
-taskbar, puts the windows back the way they were.
+The very first time you turn a taskbar on or off for a non-primary display, Windows needs
+Explorer restarted to do it. The app asks first, and it takes about a second 🔄
 
-## How it works
+## 🤔 That last checkbox
 
-- Enumerates displays with `EnumDisplayMonitors` and matches Explorer's `Shell_TrayWnd` /
-  `Shell_SecondaryTrayWnd` windows to them with `MonitorFromWindow`.
-- Hides the unwanted ones with `ShowWindow(SW_HIDE)`.
-- Reapplies on the `TaskbarCreated` broadcast, on display changes, and on a twice-a-second
-  watchdog, so an Explorer restart or a resolution change does not bring the bar back.
-- Stretches maximized windows via `SetWindowPlacement`, reusing the invisible resize border the
-  shell itself used for the maximized rect so the visible edges land exactly on the monitor.
+**Stretch maximized windows over the leftover strip**
 
-No hooks, no injection, no DLLs loaded into other processes, no keyboard automation, so there
-is nothing for anticheat to react to. Config lives in `%LOCALAPPDATA%\taskbarpick\hidden.txt`
-and stores only the displays that should stay bare, so a newly attached monitor keeps its
-taskbar. Displays are keyed by device interface path, so they survive renumbering.
+When a taskbar is hidden, Windows still holds onto its 48px slice of that screen, so maximized
+windows stop just short of the bottom and you see a wallpaper stripe 😒
 
-## Build
+Leave this ticked and windows maximized on those displays get stretched over the stripe, using
+the whole screen. The catch: such a window stops counting as "maximized", so its restore button
+won't snap it back to its old size. Untick it and everything goes back to normal 👍
 
-Needs no SDK; it uses the C# compiler that ships with Windows.
+## 🔧 Build it yourself
 
-    powershell -File build.ps1
+```
+powershell -File build.ps1
+```
 
-Output: `bin\taskbarpick.exe` (.NET Framework 4.x, x64).
+Uses the C# compiler already in Windows, so there's no SDK to install. Output lands in `bin\`.
+
+---
+
+No hooks, no injection, no background services, nothing loaded into other programs 🛡️
