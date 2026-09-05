@@ -6,7 +6,8 @@ $out = Join-Path $root "bin\taskbarpick.exe"
 New-Item -ItemType Directory -Force (Join-Path $root "bin") | Out-Null
 $sources = Get-ChildItem (Join-Path $root "src\*.cs") | ForEach-Object { $_.FullName }
 
-& $csc /nologo /target:winexe /platform:x64 /optimize+ /out:$out `
+# /codepage: the sources are UTF-8 without a BOM, which csc would otherwise read as ANSI.
+& $csc /nologo /target:winexe /platform:x64 /optimize+ /codepage:65001 /out:$out `
     /r:System.dll /r:System.Core.dll /r:System.Drawing.dll /r:System.Windows.Forms.dll `
     $sources
 

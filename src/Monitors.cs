@@ -12,7 +12,6 @@ namespace TaskbarPick
         public string Id;           // stable device interface path, survives renumbering
         public string Name;         // friendly monitor name
         public Rectangle Bounds;
-        public Rectangle WorkArea;
         public bool IsPrimary;
         public int Number;
 
@@ -30,10 +29,12 @@ namespace TaskbarPick
         {
             // "Generic PnP Monitor" is what most displays report; it adds nothing.
             bool useName = !string.IsNullOrEmpty(Name) && Name.IndexOf("Generic", StringComparison.OrdinalIgnoreCase) < 0;
-            return string.Format("Display {0}  -  {1}x{2}{3}{4}",
+            // · middle dot, × multiplication sign, written escaped so the build does
+            // not depend on the compiler guessing the source encoding.
+            return string.Format("Display {0}   ·   {1} × {2}{3}{4}",
                 Number, Bounds.Width, Bounds.Height,
-                IsPrimary ? "  (primary)" : "",
-                useName ? "  -  " + Name : "");
+                IsPrimary ? "   ·   Primary" : "",
+                useName ? "   ·   " + Name : "");
         }
     }
 
@@ -53,7 +54,6 @@ namespace TaskbarPick
                         m.Handle = h;
                         m.Device = mi.szDevice;
                         m.Bounds = mi.rcMonitor.ToRectangle();
-                        m.WorkArea = mi.rcWork.ToRectangle();
                         m.IsPrimary = (mi.dwFlags & Native.MONITORINFOF_PRIMARY) != 0;
                         m.Number = ParseNumber(mi.szDevice);
 

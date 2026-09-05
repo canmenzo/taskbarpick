@@ -8,6 +8,8 @@ namespace TaskbarPick
 {
     internal class MainForm : Form
     {
+        public const string AppTitle = "Taskbar Picker";
+
         private readonly bool _silent;
         private bool _firstShow = true;
         private bool _loading;
@@ -15,7 +17,8 @@ namespace TaskbarPick
         private List<MonitorInfo> _monitors;
         private List<string> _hidden;
 
-        private CheckedListBox _list;
+        private Panel _rowsPanel;
+        private readonly List<CheckBox> _rows = new List<CheckBox>();
         private CheckBox _autostart;
         private Label _hint;
         private NotifyIcon _tray;
@@ -31,7 +34,7 @@ namespace TaskbarPick
 
             BuildUi();
             BuildTray();
-            Populate();
+            RebuildRows(true);
 
             _watchdog = new Timer();
             _watchdog.Interval = 2000;
@@ -48,60 +51,69 @@ namespace TaskbarPick
 
         private void BuildUi()
         {
-            Text = "taskbarpick";
+            Text = AppTitle;
             Icon = Glyph.Make();
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             MinimizeBox = false;
             StartPosition = FormStartPosition.CenterScreen;
-            ClientSize = new Size(420, 250);
+            BackColor = Color.White;
             Font = new Font("Segoe UI", 9f);
+            ClientSize = new Size(462, 334);
+
+            var heading = new Label();
+            heading.Text = AppTitle;
+            heading.Font = new Font("Segoe UI Semibold", 13.5f, FontStyle.Regular);
+            heading.ForeColor = Color.FromArgb(23, 23, 23);
+            heading.SetBounds(20, 18, 300, 26);
 
             var caption = new Label();
-            caption.Text = "Show the taskbar on these displays:";
-            caption.SetBounds(12, 12, 300, 18);
+            caption.Text = "Show the Windows taskbar on these displays";
+            caption.ForeColor = Color.FromArgb(96, 96, 96);
+            caption.SetBounds(21, 46, 380, 18);
 
-            _list = new CheckedListBox();
-            _list.CheckOnClick = true;
-            _list.IntegralHeight = false;
-            _list.SetBounds(12, 34, 396, 108);
-            // ItemCheck fires before the new state is stored, so refresh the hint after it settles.
-            _list.ItemCheck += delegate
-            {
-                if (_loading || !IsHandleCreated) return;
-                BeginInvoke((MethodInvoker)UpdateHint);
-            };
+            _rowsPanel = new Panel();
+            _rowsPanel.SetBounds(20, 74, 422, 116);
+            _rowsPanel.BackColor = Color.FromArgb(250, 250, 250);
+            _rowsPanel.BorderStyle = BorderStyle.FixedSingle;
 
             var identify = new Button();
-            identify.Text = "Identify";
-            identify.SetBounds(12, 150, 80, 26);
+            identify.Text = "Identify Displays";
+            identify.SetBounds(20, 200, 130, 28);
+            identify.FlatStyle = FlatStyle.System;
             identify.Click += delegate { Identify(); };
 
             _autostart = new CheckBox();
             _autostart.Text = "Start with Windows";
-            _autostart.SetBounds(104, 152, 160, 22);
+            _autostart.AutoSize = true;
+            _autostart.Location = new Point(166, 205);
             _autostart.CheckedChanged += delegate
             {
                 if (!_loading) Config.Autostart = _autostart.Checked;
             };
 
             _hint = new Label();
-            _hint.SetBounds(12, 182, 396, 32);
-            _hint.ForeColor = SystemColors.GrayText;
+            _hint.SetBounds(21, 244, 421, 46);
+            _hint.ForeColor = Color.FromArgb(128, 128, 128);
 
             var apply = new Button();
             apply.Text = "Apply";
-            apply.SetBounds(246, 216, 80, 26);
+            apply.SetBounds(276, 296, 80, 28);
+            apply.FlatStyle = FlatStyle.System;
             apply.Click += delegate { Save(); };
 
             var close = new Button();
             close.Text = "Close";
-            close.SetBounds(332, 216, 76, 26);
+            close.SetBounds(362, 296, 80, 28);
+            close.FlatStyle = FlatStyle.System;
             close.Click += delegate { Hide(); };
 
             AcceptButton = apply;
             CancelButton = close;
-            Controls.AddRange(new Control[] { caption, _list, identify, _autostart, _hint, apply, close });
+            Controls.AddRange(new Control[]
+            {
+                heading, caption, _rowsPanel, identify, _autostart, _hint, apply, close
+            });
         }
 
         private void BuildTray()
@@ -109,36 +121,75 @@ namespace TaskbarPick
             var menu = new ContextMenuStrip();
             menu.Items.Add("Settings", null, delegate { ShowSettings(); });
             menu.Items.Add(new ToolStripSeparator());
-            menu.Items.Add("Exit (restore all taskbars)", null, delegate { ExitApp(); });
+            menu.Items.Add("Exit (Restore All Taskbars)", null, delegate { ExitApp(); });
 
             _tray = new NotifyIcon();
             _tray.Icon = Glyph.Make();
-            _tray.Text = "taskbarpick";
+            _tray.Text = AppTitle;
             _tray.ContextMenuStrip = menu;
             _tray.DoubleClick += delegate { ShowSettings(); };
             _tray.Visible = true;
         }
 
-        private void Populate()
+        // fromSaved: reset the ticks to what is on disk. Otherwise keep whatever the user has
+        // set but not applied yet, so a background refresh cannot silently undo their edit.
+        private void RebuildRows(bool fromSaved)
         {
+            var pending = new Dictionary<string, bool>();
+            if (!fromSaved)
+                foreach (CheckBox old in _rows)
+                    pending[((MonitorInfo)old.Tag).Key] = old.Checked;
+
             _loading = true;
-            _list.Items.Clear();
+            _rowsPanel.Controls.Clear();
+            _rows.Clear();
+
+            int y = 12;
             foreach (MonitorInfo m in _monitors)
-                _list.Items.Add(m.Describe(), !IsHidden(m));
+            {
+                var cb = new CheckBox();
+                cb.AutoSize = true;
+                cb.Tag = m;
+                cb.Text = m.Describe();
+                cb.Location = new Point(14, y);
+                cb.BackColor = Color.Transparent;
+
+                bool state;
+                cb.Checked = pending.TryGetValue(m.Key, out state) ? state : !IsHidden(m);
+                cb.CheckedChanged += delegate { if (!_loading) UpdateHint(); };
+
+                _rowsPanel.Controls.Add(cb);
+                _rows.Add(cb);
+                y += 30;
+            }
+
             _autostart.Checked = Config.Autostart;
             _loading = false;
             UpdateHint();
         }
 
+        private bool WantsNonPrimary()
+        {
+            foreach (CheckBox cb in _rows)
+                if (cb.Checked && !((MonitorInfo)cb.Tag).IsPrimary) return true;
+            return false;
+        }
+
+        private bool HidesNonPrimary()
+        {
+            foreach (CheckBox cb in _rows)
+                if (!cb.Checked && !((MonitorInfo)cb.Tag).IsPrimary) return true;
+            return false;
+        }
+
         private void UpdateHint()
         {
-            bool nonPrimaryWanted = false;
-            for (int i = 0; i < _monitors.Count && i < _list.Items.Count; i++)
-                if (_list.GetItemChecked(i) && !_monitors[i].IsPrimary) nonPrimaryWanted = true;
-
-            _hint.Text = nonPrimaryWanted && !Config.MultiMonTaskbars
-                ? "Windows is set to keep the taskbar on the primary display only. Apply turns on multi-display taskbars, which needs Explorer restarted once."
-                : "Runs in the tray and reapplies itself whenever Explorer restarts.";
+            if (WantsNonPrimary() != Config.MultiMonTaskbars)
+                _hint.Text = "Applying this changes a Windows setting, so Explorer has to restart once.";
+            else if (WantsNonPrimary() && HidesNonPrimary())
+                _hint.Text = "A hidden taskbar keeps its strip reserved, so maximized windows on that display stop just short of the edge. Windows will not release it.";
+            else
+                _hint.Text = "Runs in the tray and reapplies itself whenever Explorer restarts.";
         }
 
         private bool IsHidden(MonitorInfo m)
@@ -150,24 +201,23 @@ namespace TaskbarPick
 
         private void Save()
         {
+            bool nonPrimaryWanted = WantsNonPrimary();
+
             _hidden.Clear();
-            bool nonPrimaryWanted = false;
-            for (int i = 0; i < _monitors.Count; i++)
-            {
-                if (_list.GetItemChecked(i))
-                {
-                    if (!_monitors[i].IsPrimary) nonPrimaryWanted = true;
-                }
-                else _hidden.Add(_monitors[i].Key);
-            }
+            foreach (CheckBox cb in _rows)
+                if (!cb.Checked) _hidden.Add(((MonitorInfo)cb.Tag).Key);
             Config.SaveHidden(_hidden);
 
-            if (nonPrimaryWanted && !Config.MultiMonTaskbars)
+            // With no secondary taskbar wanted at all, Windows can do it properly: turning the
+            // setting off destroys those bars instead of leaving hidden ones reserving space.
+            if (nonPrimaryWanted != Config.MultiMonTaskbars)
             {
-                Config.MultiMonTaskbars = true;
-                DialogResult r = MessageBox.Show(this,
-                    "Windows only creates taskbars on the other displays after Explorer restarts.\r\n\r\nRestart Explorer now?",
-                    "taskbarpick", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                Config.MultiMonTaskbars = nonPrimaryWanted;
+                string what = nonPrimaryWanted
+                    ? "Windows only creates taskbars on the other displays after Explorer restarts."
+                    : "Windows only removes the taskbars from the other displays after Explorer restarts.";
+                DialogResult r = MessageBox.Show(this, what + "\r\n\r\nRestart Explorer now?",
+                    AppTitle, MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if (r == DialogResult.Yes)
                 {
                     Config.RestartExplorer();
@@ -176,6 +226,7 @@ namespace TaskbarPick
                 }
             }
             Reapply();
+            UpdateHint();
         }
 
         private void Reapply()
@@ -192,7 +243,7 @@ namespace TaskbarPick
         private void ReloadDisplays()
         {
             _monitors = Monitors.All();
-            Populate();
+            RebuildRows(false);
             Reapply();
         }
 
@@ -241,7 +292,9 @@ namespace TaskbarPick
 
         private void ShowSettings()
         {
-            ReloadDisplays();
+            _monitors = Monitors.All();
+            _hidden = Config.LoadHidden();
+            RebuildRows(true);
             Show();
             WindowState = FormWindowState.Normal;
             Activate();

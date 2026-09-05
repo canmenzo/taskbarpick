@@ -14,13 +14,6 @@ namespace TaskbarPick
         {
             return Rectangle.FromLTRB(Left, Top, Right, Bottom);
         }
-
-        public static RECT From(Rectangle r)
-        {
-            RECT x;
-            x.Left = r.Left; x.Top = r.Top; x.Right = r.Right; x.Bottom = r.Bottom;
-            return x;
-        }
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
@@ -50,8 +43,6 @@ namespace TaskbarPick
         public const int SW_SHOW = 5;
         public const int MONITOR_DEFAULTTONEAREST = 2;
         public const int MONITORINFOF_PRIMARY = 1;
-        public const uint SPI_SETWORKAREA = 0x002F;
-        public const uint SPIF_SENDCHANGE = 0x02;
         public const int EDD_GET_DEVICE_INTERFACE_NAME = 1;
 
         public delegate bool MonitorEnumProc(IntPtr hMonitor, IntPtr hdc, ref RECT lprc, IntPtr data);
@@ -76,16 +67,10 @@ namespace TaskbarPick
         public static extern IntPtr MonitorFromWindow(IntPtr hWnd, int flags);
 
         [DllImport("user32.dll")]
-        public static extern bool GetWindowRect(IntPtr hWnd, out RECT rect);
-
-        [DllImport("user32.dll")]
         public static extern bool ShowWindow(IntPtr hWnd, int cmd);
 
         [DllImport("user32.dll")]
         public static extern bool IsWindowVisible(IntPtr hWnd);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        public static extern bool SystemParametersInfo(uint action, uint param, ref RECT pv, uint winIni);
 
         [DllImport("user32.dll", CharSet = CharSet.Unicode, EntryPoint = "RegisterWindowMessageW")]
         public static extern int RegisterWindowMessage(string name);

@@ -13,15 +13,20 @@ namespace TaskbarPick
         private const string AdvancedKey = @"Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced";
         private const string AppName = "taskbarpick";
 
-        private static string FilePath
+        private static string Dir
         {
             get
             {
                 string dir = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), AppName);
                 Directory.CreateDirectory(dir);
-                return Path.Combine(dir, "hidden.txt");
+                return dir;
             }
+        }
+
+        private static string FilePath
+        {
+            get { return Path.Combine(Dir, "hidden.txt"); }
         }
 
         // Only the displays whose taskbar is hidden are stored, so a newly attached
