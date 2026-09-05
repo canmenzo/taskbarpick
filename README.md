@@ -8,10 +8,12 @@ Got three monitors and want the taskbar on just two? Tough luck. That's what thi
 
 ## 📦 Get it running
 
-1. Download or clone this repo
-2. Run `bin\taskbarpick.exe`
+1. Download this repo (green **Code** button → **Download ZIP**) and unzip it
+2. Double-click **`build.cmd`** — takes about a second
+3. Run **`bin\taskbarpick.exe`**
 
-That's it. No installer, no runtime to download, nothing to configure. It's a single 20KB app 🪶
+No installer and nothing to download beforehand: step 2 uses the C# compiler that is already
+part of Windows, so there is no SDK, no runtime, no dependencies. You end up with one 20KB app 🪶
 
 ## 🎛️ Using it
 
@@ -35,14 +37,6 @@ windows stop just short of the bottom and you see a wallpaper stripe 😒
 Leave this ticked and windows maximized on those displays get stretched over the stripe, using
 the whole screen. The catch: such a window stops counting as "maximized", so its restore button
 won't snap it back to its old size. Untick it and everything goes back to normal 👍
-
-## 🔧 Build it yourself
-
-```
-powershell -File build.ps1
-```
-
-Uses the C# compiler already in Windows, so there's no SDK to install. Output lands in `bin\`.
 
 ---
 
