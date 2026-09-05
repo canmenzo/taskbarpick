@@ -29,6 +29,26 @@ namespace TaskbarPick
             get { return Path.Combine(Dir, "hidden.txt"); }
         }
 
+        private static string FillPath
+        {
+            get { return Path.Combine(Dir, "nofill.txt"); }
+        }
+
+        // Stored inverted so the default, with no file present, is on.
+        public static bool FillBareDisplays
+        {
+            get { return !File.Exists(FillPath); }
+            set
+            {
+                try
+                {
+                    if (value) File.Delete(FillPath);
+                    else File.WriteAllText(FillPath, "off");
+                }
+                catch { }
+            }
+        }
+
         // Only the displays whose taskbar is hidden are stored, so a newly attached
         // display keeps its taskbar instead of silently losing it.
         public static List<string> LoadHidden()

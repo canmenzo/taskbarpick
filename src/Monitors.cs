@@ -12,6 +12,7 @@ namespace TaskbarPick
         public string Id;           // stable device interface path, survives renumbering
         public string Name;         // friendly monitor name
         public Rectangle Bounds;
+        public Rectangle WorkArea;
         public bool IsPrimary;
         public int Number;
 
@@ -54,6 +55,7 @@ namespace TaskbarPick
                         m.Handle = h;
                         m.Device = mi.szDevice;
                         m.Bounds = mi.rcMonitor.ToRectangle();
+                        m.WorkArea = mi.rcWork.ToRectangle();
                         m.IsPrimary = (mi.dwFlags & Native.MONITORINFOF_PRIMARY) != 0;
                         m.Number = ParseNumber(mi.szDevice);
 

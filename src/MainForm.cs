@@ -20,6 +20,7 @@ namespace TaskbarPick
         private Panel _rowsPanel;
         private readonly List<CheckBox> _rows = new List<CheckBox>();
         private CheckBox _autostart;
+        private CheckBox _fill;
         private Label _hint;
         private NotifyIcon _tray;
         private Timer _watchdog;
@@ -37,7 +38,7 @@ namespace TaskbarPick
             RebuildRows(true);
 
             _watchdog = new Timer();
-            _watchdog.Interval = 2000;
+            _watchdog.Interval = 500;
             _watchdog.Tick += delegate { Reapply(); };
             _watchdog.Start();
 
@@ -59,7 +60,7 @@ namespace TaskbarPick
             StartPosition = FormStartPosition.CenterScreen;
             BackColor = Color.White;
             Font = new Font("Segoe UI", 9f);
-            ClientSize = new Size(462, 334);
+            ClientSize = new Size(462, 358);
 
             var heading = new Label();
             heading.Text = AppTitle;
@@ -92,19 +93,32 @@ namespace TaskbarPick
                 if (!_loading) Config.Autostart = _autostart.Checked;
             };
 
+            _fill = new CheckBox();
+            _fill.Text = "Stretch maximized windows over the leftover strip";
+            _fill.AutoSize = true;
+            _fill.Location = new Point(21, 240);
+            _fill.CheckedChanged += delegate
+            {
+                if (_loading) return;
+                Config.FillBareDisplays = _fill.Checked;
+                if (!_fill.Checked) Fill.RestoreAll();
+                UpdateHint();
+                Reapply();
+            };
+
             _hint = new Label();
-            _hint.SetBounds(21, 244, 421, 46);
+            _hint.SetBounds(21, 268, 421, 46);
             _hint.ForeColor = Color.FromArgb(128, 128, 128);
 
             var apply = new Button();
             apply.Text = "Apply";
-            apply.SetBounds(276, 296, 80, 28);
+            apply.SetBounds(276, 320, 80, 28);
             apply.FlatStyle = FlatStyle.System;
             apply.Click += delegate { Save(); };
 
             var close = new Button();
             close.Text = "Close";
-            close.SetBounds(362, 296, 80, 28);
+            close.SetBounds(362, 320, 80, 28);
             close.FlatStyle = FlatStyle.System;
             close.Click += delegate { Hide(); };
 
@@ -112,7 +126,7 @@ namespace TaskbarPick
             CancelButton = close;
             Controls.AddRange(new Control[]
             {
-                heading, caption, _rowsPanel, identify, _autostart, _hint, apply, close
+                heading, caption, _rowsPanel, identify, _autostart, _fill, _hint, apply, close
             });
         }
 
@@ -164,6 +178,7 @@ namespace TaskbarPick
             }
 
             _autostart.Checked = Config.Autostart;
+            _fill.Checked = Config.FillBareDisplays;
             _loading = false;
             UpdateHint();
         }
@@ -187,7 +202,9 @@ namespace TaskbarPick
             if (WantsNonPrimary() != Config.MultiMonTaskbars)
                 _hint.Text = "Applying this changes a Windows setting, so Explorer has to restart once.";
             else if (WantsNonPrimary() && HidesNonPrimary())
-                _hint.Text = "A hidden taskbar keeps its strip reserved, so maximized windows on that display stop just short of the edge. Windows will not release it.";
+                _hint.Text = Config.FillBareDisplays
+                    ? "Windows keeps a hidden taskbar's strip reserved, so windows maximized there are stretched over it instead. They stop counting as maximized."
+                    : "A hidden taskbar keeps its strip reserved, so maximized windows on that display stop just short of the edge. Windows will not release it.";
             else
                 _hint.Text = "Runs in the tray and reapplies itself whenever Explorer restarts.";
         }
@@ -233,6 +250,7 @@ namespace TaskbarPick
         {
             _monitors = Monitors.All();
             Taskbars.Apply(_monitors, IsWanted);
+            if (Config.FillBareDisplays) Fill.Apply(_monitors, IsHidden);
         }
 
         private bool IsWanted(MonitorInfo m)
@@ -303,6 +321,7 @@ namespace TaskbarPick
         private void ExitApp()
         {
             _watchdog.Stop();
+            Fill.RestoreAll();
             Taskbars.RestoreAll();
             _tray.Visible = false;
             Application.Exit();
