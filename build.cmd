@@ -8,7 +8,9 @@ if not exist "%CSC%" (
     exit /b 1
 )
 if not exist bin mkdir bin
-"%CSC%" /nologo /target:winexe /platform:x64 /optimize+ /codepage:65001 /out:bin\taskbarpick.exe ^
+"%CSC%" /nologo /target:winexe /platform:x64 /optimize+ /codepage:65001 ^
+    /win32icon:src\taskbarpick.ico /resource:src\taskbarpick.ico,taskbarpick.ico ^
+    /out:bin\taskbarpick.exe ^
     /r:System.dll /r:System.Core.dll /r:System.Drawing.dll /r:System.Windows.Forms.dll src\*.cs
 if errorlevel 1 (
     echo Build failed.

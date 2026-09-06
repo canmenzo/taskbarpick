@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
 using Microsoft.Win32;
@@ -56,7 +57,7 @@ namespace TaskbarPick
         private void BuildUi()
         {
             Text = AppTitle + " " + Version;
-            Icon = Glyph.Make();
+            Icon = Glyph.Window();
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             MinimizeBox = false;
@@ -141,7 +142,7 @@ namespace TaskbarPick
             menu.Items.Add("Exit (Restore All Taskbars)", null, delegate { ExitApp(); });
 
             _tray = new NotifyIcon();
-            _tray.Icon = Glyph.Make();
+            _tray.Icon = Glyph.Tray();
             _tray.Text = AppTitle + " " + Version;
             _tray.ContextMenuStrip = menu;
             _tray.DoubleClick += delegate { ShowSettings(); };
@@ -381,25 +382,23 @@ namespace TaskbarPick
         }
     }
 
+    // The same .ico the build stamps onto the exe, so the window, the tray and the file in
+    // Explorer are one piece of artwork instead of three that drift apart.
     internal static class Glyph
     {
-        public static Icon Make()
+        public static Icon Window()
         {
-            using (var bmp = new Bitmap(32, 32))
-            {
-                using (Graphics g = Graphics.FromImage(bmp))
-                {
-                    g.Clear(Color.Transparent);
-                    using (var pen = new Pen(Color.FromArgb(240, 240, 240), 2f))
-                    {
-                        g.DrawRectangle(pen, 3, 6, 25, 18);
-                        g.DrawLine(pen, 12, 27, 20, 27);
-                    }
-                    using (var brush = new SolidBrush(Color.FromArgb(0, 150, 255)))
-                        g.FillRectangle(brush, 5, 19, 21, 4);
-                }
-                return Icon.FromHandle(bmp.GetHicon());
-            }
+            using (Stream s = Open()) return new Icon(s);
+        }
+
+        public static Icon Tray()
+        {
+            using (Stream s = Open()) return new Icon(s, 16, 16);
+        }
+
+        private static Stream Open()
+        {
+            return Assembly.GetExecutingAssembly().GetManifestResourceStream("taskbarpick.ico");
         }
     }
 }
