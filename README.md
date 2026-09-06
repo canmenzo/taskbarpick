@@ -1,63 +1,48 @@
-# Taskbar Picker
+# 🖥️ Taskbar Picker
 
-Windows 11 gives you two choices: taskbar on **one** display, or on **all** of them.
+Windows 11 only lets you put the taskbar on **one** display or on **all** of them.
 
-Got three monitors and want the taskbar on just two? Tough luck. That's what this fixes.
+Got three monitors and want the taskbar on just two? 🤷 That's what this fixes.
 
 ![Taskbar Picker hiding a taskbar](docs/demo.gif)
 
-## Get it running
+## 🚀 Get started
 
-1. Download this repo (green **Code** button → **Download ZIP**) and unzip it
-2. Double-click **`build.cmd`**, it takes about a second
-3. Run **`bin\taskbarpick.exe`**
+1. ⬇️ Green **Code** button → **Download ZIP**, then unzip it
+2. 🔨 Double-click **`build.cmd`** (takes a second)
+3. ▶️ Run **`bin\taskbarpick.exe`**
 
-No installer and nothing to download beforehand: step 2 uses the C# compiler that is already
-part of Windows, so there is no SDK, no runtime, no dependencies. You end up with one 24KB app.
+Nothing to install. No SDK, no runtime, no downloads. Step 2 uses the compiler already built
+into Windows and gives you one 24KB app. 🆓
 
-You build it yourself on purpose. A downloaded binary from a stranger is unsigned, so Windows
-SmartScreen blocks it and you have to click through the warning to trust something you cannot
-read. This way the only thing you download is source you can look at first.
+## ✅ Use it
 
-## Using it
+Tick the displays that should have a taskbar → **Apply**. That's it.
 
-![The picker dialog](docs/dialog.png)
+- 🔢 **Identify Displays** flashes a big number on each screen so you know which is which
+- 🔁 **Start with Windows** brings it back after a reboot
+- 📌 It lives in the system tray. Double-click the icon to change your picks
+- 🚪 Tray menu → **Exit** puts every taskbar back
 
-Tick the displays that should have a taskbar, click **Apply**. Done.
+The first time you change a non-primary display, Windows needs Explorer restarted. The app asks
+first, it takes a second, and open File Explorer windows will close.
 
-- **Identify Displays** flashes a big number on each screen, so you know which is which
-- **Start with Windows** brings it back automatically after a reboot
-- It lives in the system tray. Double-click the icon to change your picks
-- Tray menu → **Exit** puts every taskbar back exactly as it was
+## 🖼️ Full-screen windows
 
-The very first time you turn a taskbar on or off for a non-primary display, Windows needs
-Explorer restarted to do it. The app asks first, it takes about a second, and any File Explorer
-windows you have open will close.
+**Stretch maximized windows over the leftover strip** fills the 48px of wallpaper Windows leaves
+behind when a taskbar is hidden. Downside: those windows stop counting as "maximized", so the
+restore button won't snap them back. Untick it to go back to normal.
 
-## That last checkbox
+## 🆘 Taskbar missing and the app is gone?
 
-**Stretch maximized windows over the leftover strip**
+If the app gets killed instead of exited, the taskbar stays hidden and there's no tray icon left.
+Either way back works:
 
-When a taskbar is hidden, Windows still holds onto its 48px slice of that screen, so maximized
-windows stop just short of the bottom and you see a wallpaper stripe.
+- Run `taskbarpick.exe` again → tray menu → **Exit**
+- Or Ctrl+Shift+Esc → **Windows Explorer** → **Restart**
 
-Leave this ticked and windows maximized on those displays get stretched over the stripe, using
-the whole screen. The catch: such a window stops counting as "maximized", so its restore button
-won't snap it back to its old size. Untick it and everything goes back to normal.
-
-## If a taskbar is missing and the app is gone
-
-Hiding a taskbar lasts as long as Windows keeps that taskbar window hidden. Quitting through the
-tray menu restores everything, but if the app is killed instead (Task Manager, a crash, an update
-that takes the process down), the taskbar stays hidden and there is no tray icon left to fix it.
-
-Two ways back:
-
-- Start `taskbarpick.exe` again and use the tray menu → **Exit**
-- Or Ctrl+Shift+Esc → find **Windows Explorer** → **Restart**
-
-## Notes
+## 🔒 Safe by design
 
 No hooks, no injection, no background services, nothing loaded into other programs.
 
-MIT licensed, see [LICENSE](LICENSE). Built and used on Windows 11.
+MIT licensed, see [LICENSE](LICENSE). 💙 Built for Windows 11.
