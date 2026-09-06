@@ -8,7 +8,7 @@ Got three monitors and want the taskbar on just two? 🤷 That's what this fixes
 
 ## 🚀 Get started
 
-1. ⬇️ Green **Code** button → **Download ZIP**, then unzip it
+1. ⬇️ **[Download Taskbar Picker 1.0.0](https://github.com/canmenzo/taskbarpick/releases/latest/download/taskbarpick-1.0.0.zip)** and unzip it
 2. 🔨 Double-click **`build.cmd`** (takes a second)
 3. ▶️ Run **`bin\taskbarpick.exe`**
 
