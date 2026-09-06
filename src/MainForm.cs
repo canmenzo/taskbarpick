@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Reflection;
 using System.Windows.Forms;
 using Microsoft.Win32;
 
@@ -9,6 +10,8 @@ namespace TaskbarPick
     internal class MainForm : Form
     {
         public const string AppTitle = "Taskbar Picker";
+        public static readonly string Version =
+            Assembly.GetExecutingAssembly().GetName().Version.ToString(2);
 
         private readonly bool _silent;
         private bool _firstShow = true;
@@ -52,7 +55,7 @@ namespace TaskbarPick
 
         private void BuildUi()
         {
-            Text = AppTitle;
+            Text = AppTitle + " " + Version;
             Icon = Glyph.Make();
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
@@ -139,7 +142,7 @@ namespace TaskbarPick
 
             _tray = new NotifyIcon();
             _tray.Icon = Glyph.Make();
-            _tray.Text = AppTitle;
+            _tray.Text = AppTitle + " " + Version;
             _tray.ContextMenuStrip = menu;
             _tray.DoubleClick += delegate { ShowSettings(); };
             _tray.Visible = true;
@@ -233,7 +236,9 @@ namespace TaskbarPick
                 string what = nonPrimaryWanted
                     ? "Windows only creates taskbars on the other displays after Explorer restarts."
                     : "Windows only removes the taskbars from the other displays after Explorer restarts.";
-                DialogResult r = MessageBox.Show(this, what + "\r\n\r\nRestart Explorer now?",
+                DialogResult r = MessageBox.Show(this,
+                    what + "\r\n\r\nAny File Explorer windows you have open will close."
+                         + "\r\n\r\nRestart Explorer now?",
                     AppTitle, MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if (r == DialogResult.Yes)
                 {
