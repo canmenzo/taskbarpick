@@ -4,7 +4,7 @@ Windows 11 gives you two choices: taskbar on **one** display, or on **all** of t
 
 Got three monitors and want the taskbar on just two? Tough luck. That's what this fixes.
 
-![Taskbar Picker](docs/dialog.png)
+![Taskbar Picker hiding a taskbar](docs/demo.gif)
 
 ## Get it running
 
@@ -20,6 +20,8 @@ SmartScreen blocks it and you have to click through the warning to trust somethi
 read. This way the only thing you download is source you can look at first.
 
 ## Using it
+
+![The picker dialog](docs/dialog.png)
 
 Tick the displays that should have a taskbar, click **Apply**. Done.
 
