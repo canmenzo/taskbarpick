@@ -221,6 +221,8 @@ namespace TaskbarPick
 
         private void Save()
         {
+            if (_rows.Count == 0) return;   // saving no displays would throw the picks away
+
             bool nonPrimaryWanted = WantsNonPrimary();
 
             _hidden.Clear();
@@ -265,7 +267,17 @@ namespace TaskbarPick
 
         private void ReloadDisplays()
         {
-            _monitors = Monitors.All();
+            // Explorer restarts and display changes both leave a window where the monitors
+            // enumerate as none at all. Drawing that would empty the list and leave it empty,
+            // so wait it out instead.
+            List<MonitorInfo> found = Monitors.All();
+            if (found.Count == 0)
+            {
+                _delayed.Start();
+                return;
+            }
+
+            _monitors = found;
             RebuildRows(false);
             Reapply();
         }
