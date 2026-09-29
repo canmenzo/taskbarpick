@@ -1,8 +1,10 @@
 # 🖥️ Taskbar Picker
 
+[![release](https://img.shields.io/github/v/release/canmenzo/taskbarpick)](https://github.com/canmenzo/taskbarpick/releases/latest) [![license](https://img.shields.io/github/license/canmenzo/taskbarpick)](LICENSE) ![platform](https://img.shields.io/badge/platform-Windows%2011-0078D6?logo=windows&logoColor=white)
+
 Windows 11 only lets you put the taskbar on **one** display or on **all** of them.
 
-Got three monitors and want the taskbar on just two? 🤷 That's what this fixes.
+Got three monitors and want the taskbar on just two? That's what this fixes.
 
 ![Taskbar Picker hiding a taskbar](docs/demo.gif)
 
@@ -13,7 +15,7 @@ Got three monitors and want the taskbar on just two? 🤷 That's what this fixes
 3. ▶️ Run **`bin\taskbarpick.exe`**
 
 Nothing to install. No SDK, no runtime, no downloads. Step 2 uses the compiler already built
-into Windows and gives you one 24KB app. 🆓
+into Windows (.NET Framework 4 `csc.exe`) and gives you one small exe.
 
 ## ✅ Use it
 
@@ -22,7 +24,8 @@ Tick the displays that should have a taskbar → **Apply**. That's it.
 - 🔢 **Identify Displays** flashes a big number on each screen so you know which is which
 - 🔁 **Start with Windows** brings it back after a reboot
 - 📌 It lives in the system tray. Double-click the icon to change your picks
-- 🚪 Tray menu → **Exit** puts every taskbar back
+- 🚪 Tray menu → **Exit (Restore All Taskbars)** puts every taskbar back
+- ♻️ Reapplies your picks whenever Explorer restarts
 
 The first time you change a non-primary display, Windows needs Explorer restarted. The app asks
 first, it takes a second, and open File Explorer windows will close.
@@ -38,11 +41,13 @@ restore button won't snap them back. Untick it to go back to normal.
 If the app gets killed instead of exited, the taskbar stays hidden and there's no tray icon left.
 Either way back works:
 
-- Run `taskbarpick.exe` again → tray menu → **Exit**
+- Run `taskbarpick.exe` again → tray menu → **Exit (Restore All Taskbars)**
 - Or Ctrl+Shift+Esc → **Windows Explorer** → **Restart**
 
 ## 🔒 Safe by design
 
 No hooks, no injection, no background services, nothing loaded into other programs.
 
-MIT licensed, see [LICENSE](LICENSE). 💙 Built for Windows 11.
+## 📄 License
+
+MIT, see [LICENSE](LICENSE).
