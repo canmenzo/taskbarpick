@@ -125,7 +125,7 @@ namespace TaskbarPick
                 Thread.Sleep(250);
                 if (Process.GetProcessesByName("explorer").Length > 0) return;
             }
-            try { Process.Start("explorer.exe"); }
+            try { Process.Start(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "explorer.exe")); }
             catch { }
         }
     }
